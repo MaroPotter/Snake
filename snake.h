@@ -8,15 +8,16 @@ class Game
     int sizeBlock = 48;
     int width = sizeBlock * columns;
     int height = sizeBlock * rows;
-    int sizeSnake, moveDirection = 4;
+    int sizeSnake = 1, moveDirection = 4;
     //sf::RenderWindow window;
 public:
    // Game();
     constexpr static int columns = 20;
     constexpr static int rows = 15;
-    void move();
+    void move(sf::RenderWindow &);
     void play();
     void start();
+    void gameover(sf::RenderWindow&);
 };
 struct Snake
 {

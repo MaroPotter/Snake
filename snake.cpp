@@ -9,15 +9,41 @@ using namespace std;
 // int Game::columns = 15, Game::rows = 20;
 Snake snake[Game::columns * Game:: rows];
 Apple apple;
-float delay = 0.3;
+float delay = 0.2;
 /*Game::Game()
 {
     window.create(VideoMode(width, height), "Snake");
 }*/
 
 // method responsible for one single move on the board
+void Game::gameover(RenderWindow & window_)
+{
+    snake[0].x = 0;
+    snake[0].y = 0;
+    sizeSnake = 1;
+    moveDirection = 4;
+    cout<<"Game over!"<<endl;
+    window_.close();
 
-void Game:: move()
+
+    /*
+    RenderWindow window(VideoMode(width, height), "Snake");
+    Font font;
+    Text text[1];
+    if (!font.loadFromFile("arial.ttf"))
+    {
+        // handle error
+    }
+    text[0].setFont(font);
+    text[0].setFillColor(Color::Red);
+    text[0].setString("GAME OVER ");
+    text[0].setPosition(Vector2f(width / 2, height / 2));
+    window_.clear();
+    window_.draw(text[0]);
+    window_.display();
+
+} */}
+void Game:: move(RenderWindow & window)
 {
     // moving of the snake by following head
     for (int i=sizeSnake; i>0; --i)
@@ -53,22 +79,25 @@ void Game:: move()
     // going through walls
     if (snake[0].x>columns-1)
     {
-        snake[0].x=0;
+        //snake[0].x=0;
+        gameover(window);
     }
 
     if (snake[0].x<0)
     {
-        snake[0].x=columns-1;
+        //snake[0].x=columns-1;
+        gameover(window);
     }
 
     if (snake[0].y>rows-1)
     {
-        snake[0].y=0;
+        gameover(window);// snake[0].y=0;
     }
 
     if (snake[0].y<0)
     {
-        snake[0].y=rows-1;
+       // snake[0].y=rows-1;
+       gameover(window);
     }
 
 //snake eating snake
@@ -201,7 +230,7 @@ void Game::play()
         if (timer>delay)
         {
             timer=0;
-            move();
+            move(window);
         }
 
         window.clear();
@@ -286,6 +315,5 @@ void Game::start()
         window.display();
     }
 }
-
 
 
