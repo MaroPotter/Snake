@@ -7,10 +7,16 @@ using namespace std;
 
 //initialization of global variables
 // int Game::columns = 15, Game::rows = 20;
-Snake snake[Game::columns*Game::rows];
+Snake snake[Game::columns * Game:: rows];
 Apple apple;
 float delay = 0.3;
+/*Game::Game()
+{
+    window.create(VideoMode(width, height), "Snake");
+}*/
+
 // method responsible for one single move on the board
+
 void Game:: move()
 {
     // moving of the snake by following head
@@ -57,7 +63,7 @@ void Game:: move()
 
     if (snake[0].y>rows-1)
     {
-         snake[0].y=0;
+        snake[0].y=0;
     }
 
     if (snake[0].y<0)
@@ -68,7 +74,7 @@ void Game:: move()
 //snake eating snake
     for (int i=1; i<sizeSnake; i++)
     {
-       if (snake[0].x==snake[i].x && snake[0].y==snake[i].y)
+        if (snake[0].x==snake[i].x && snake[0].y==snake[i].y)
         {
             sizeSnake=i;
             delay = 0.3-(0.01*i);
@@ -77,13 +83,70 @@ void Game:: move()
 
 
 }
+
+
+Menu::Menu(int w, int h)
+{
+    if (!font.loadFromFile("arial.ttf"))
+    {
+        // handle error
+    }
+
+    menu[0].setFont(font);
+    menu[0].setFillColor(Color::Red);
+    menu[0].setString("Play");
+    menu[0].setPosition(Vector2f(w / 2, h / (MAX_NUMBER_OF_ITEMS + 1) * 1));
+
+    menu[1].setFont(font);
+    menu[1].setFillColor(Color::White);
+    menu[1].setString("Options");
+    menu[1].setPosition(Vector2f(w / 2, h / (MAX_NUMBER_OF_ITEMS + 1) * 2));
+
+    menu[2].setFont(font);
+    menu[2].setFillColor(Color::White);
+    menu[2].setString("Exit");
+    menu[2].setPosition(Vector2f(w / 2, h / (MAX_NUMBER_OF_ITEMS + 1) * 3));
+
+    selectedItemIndex = 0;
+}
+
+
+void Menu::draw(RenderWindow &window_)
+{
+    for (int i = 0; i < MAX_NUMBER_OF_ITEMS; i++)
+    {
+        window_.draw(menu[i]);
+    }
+}
+
+void Menu::MoveUp()
+{
+    if (selectedItemIndex - 1 >= 0)
+    {
+        menu[selectedItemIndex].setFillColor(Color::White);
+        selectedItemIndex--;
+        menu[selectedItemIndex].setFillColor(Color::Red);
+    }
+}
+
+void Menu::MoveDown()
+{
+    if (selectedItemIndex + 1 < MAX_NUMBER_OF_ITEMS)
+    {
+        menu[selectedItemIndex].setFillColor(Color::White);
+        selectedItemIndex++;
+        menu[selectedItemIndex].setFillColor(Color::Red);
+    }
+}
+
 //main method responsible for entirety of the game, especially graphics section
+
 void Game::play()
 {
-
-    RenderWindow window(VideoMode(width,height), "Snake", Style::Close | Style::Resize);
-    /*sf::RectangleShape snake (sf::Vector2f(300.0f, 100.0f));
-    snake.setFillColor(sf::Color::Green);
+    RenderWindow window(VideoMode(width, height), "Snake");
+    // RenderWindow window(VideoMode(width, height), "Snake", Style::Close | Style::Resize);
+    /*RectangleShape snake (Vector2f(300.0f, 100.0f));
+    snake.setFillColor(Color::Green);
     snake.setOrigin(0.0f, 0.0f); */
     Texture textureBlock,textureSnake,textureApple;
     textureBlock.loadFromFile("white.png");
@@ -122,7 +185,7 @@ void Game::play()
         }
         if (Keyboard::isKeyPressed(Keyboard::Right))
         {
-           moveDirection = 2;
+            moveDirection = 2;
         }
         if (Keyboard::isKeyPressed(Keyboard::Up))
         {
@@ -144,12 +207,13 @@ void Game::play()
         window.clear();
         // drawing fields
         for (int i=0; i<columns; i++)
+        {
             for (int j=0; j<rows; j++)
             {
                 blockSprite.setPosition(i*sizeBlock,j*sizeBlock);
                 window.draw(blockSprite);
             }
-
+        }
         for (int i=0; i<sizeSnake; i++)
         {
             snakeSprite.setPosition(snake[i].x*sizeBlock, snake[i].y*sizeBlock);
@@ -160,6 +224,68 @@ void Game::play()
         window.draw(appleSprite);
 
         window.display();
-    }
 
+
+    }
 }
+
+void Game::start()
+{
+    RenderWindow window(VideoMode(width, height), "Snake");
+
+    Menu menu(window.getSize().x, window.getSize().y);
+
+    while (window.isOpen())
+    {
+        Event event;
+
+        while (window.pollEvent(event))
+        {
+            switch (event.type)
+            {
+            case Event::KeyReleased:
+                switch (event.key.code)
+                {
+                case Keyboard::Up:
+                    menu.MoveUp();
+                    break;
+
+                case Keyboard::Down:
+                    menu.MoveDown();
+                    break;
+
+                case Keyboard::Return:
+                    switch (menu.GetPressedItem())
+                    {
+                    case 0:
+                        Game::play();
+                        break;
+                    case 1:
+                        std::cout << "Option button has been pressed" << std::endl;
+                        break;
+                    case 2:
+                        window.close();
+                        break;
+                    }
+
+                    break;
+                }
+
+                break;
+            case Event::Closed:
+                window.close();
+
+                break;
+
+            }
+        }
+        window.clear();
+
+        menu.draw(window);
+
+        window.display();
+    }
+}
+
+
+

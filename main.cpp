@@ -8,6 +8,6 @@ int main()
 
     srand(time(NULL));
     Game game;
-    game.play();
+    game.start();
     return 0;
 }

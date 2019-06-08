@@ -1,7 +1,7 @@
-#ifndef SNAKE_H_
-#define SNAKE_H_
+#pragma once
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#define MAX_NUMBER_OF_ITEMS 3
 using namespace std;
 class Game
 {
@@ -9,13 +9,14 @@ class Game
     int width = sizeBlock * columns;
     int height = sizeBlock * rows;
     int sizeSnake, moveDirection = 4;
+    //sf::RenderWindow window;
 public:
-    constexpr static int columns = 20, rows = 15;
-    friend struct Snake;
-    Game() {};
-    void play();
+   // Game();
+    constexpr static int columns = 20;
+    constexpr static int rows = 15;
     void move();
-
+    void play();
+    void start();
 };
 struct Snake
 {
@@ -24,6 +25,19 @@ struct Snake
 struct Apple
 {
     int x,y;
+};
+
+class Menu
+{
+    int selectedItemIndex;
+    sf::Font font;
+    sf::Text menu[MAX_NUMBER_OF_ITEMS];
+public:
+    Menu(int w, int h);
+	void draw(sf::RenderWindow &window_);
+	void MoveUp();
+	void MoveDown();
+	int GetPressedItem() { return selectedItemIndex; }
 };
 
 
@@ -122,4 +136,3 @@ public:
 
 };
 */
-#endif
