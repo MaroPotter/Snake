@@ -1,29 +1,36 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <algorithm>
+#include <vector>
 #include <ctime>
 #include "snake.h"
+#include "menu.h"
 using namespace sf;
 using namespace std;
 
 //initialization of global variables
-// int Game::columns = 15, Game::rows = 20;
+
 Snake snake[Game::columns * Game:: rows];
 Apple apple;
-float delay = 0.2;
+
+
 /*Game::Game()
 {
     window.create(VideoMode(width, height), "Snake");
 }*/
 
-// method responsible for one single move on the board
-void Game::gameover(RenderWindow & window_)
+// the gameover () method throws the user back into the menu, prints out the score and restores the initial settings
+void Game::gameover(RenderWindow & window)
 {
     snake[0].x = 0;
     snake[0].y = 0;
-    sizeSnake = 1;
     moveDirection = 4;
-    cout<<"Game over!"<<endl;
-    window_.close();
+    scores.push_back(sizeSnake);
+    cout<<"Game over!"<< endl;
+    cout<<"Your score was: " <<scores.back()<< " points" << endl;
+    cout << "Your record in this game session is: " <<
+         *max_element(scores.begin(), scores.end()) << " points" << endl << endl;
+    window.close();
 
 
     /*
@@ -42,7 +49,11 @@ void Game::gameover(RenderWindow & window_)
     window_.draw(text[0]);
     window_.display();
 
-} */}
+    } */
+}
+
+// method responsible for one single move on the board
+
 void Game:: move(RenderWindow & window)
 {
     // moving of the snake by following head
@@ -71,7 +82,8 @@ void Game:: move(RenderWindow & window)
     if ((snake[0].x==apple.x) && (snake[0].y==apple.y))
     {
         sizeSnake++;
-        delay -= 0.01;
+        if(delay > 0.02)
+                delay -= 0.01;
         apple.x=rand() % columns;
         apple.y=rand() % rows;
     }
@@ -96,8 +108,8 @@ void Game:: move(RenderWindow & window)
 
     if (snake[0].y<0)
     {
-       // snake[0].y=rows-1;
-       gameover(window);
+        // snake[0].y=rows-1;
+        gameover(window);
     }
 
 //snake eating snake
@@ -105,8 +117,8 @@ void Game:: move(RenderWindow & window)
     {
         if (snake[0].x==snake[i].x && snake[0].y==snake[i].y)
         {
-            sizeSnake=i;
-            delay = 0.3-(0.01*i);
+            sizeSnake = i;
+            delay = delay_default - (0.01*i);
         }
     }
 
@@ -114,69 +126,10 @@ void Game:: move(RenderWindow & window)
 }
 
 
-Menu::Menu(int w, int h)
+
+
+void Game::drawFields(RenderWindow & window)
 {
-    if (!font.loadFromFile("arial.ttf"))
-    {
-        // handle error
-    }
-
-    menu[0].setFont(font);
-    menu[0].setFillColor(Color::Red);
-    menu[0].setString("Play");
-    menu[0].setPosition(Vector2f(w / 2, h / (MAX_NUMBER_OF_ITEMS + 1) * 1));
-
-    menu[1].setFont(font);
-    menu[1].setFillColor(Color::White);
-    menu[1].setString("Options");
-    menu[1].setPosition(Vector2f(w / 2, h / (MAX_NUMBER_OF_ITEMS + 1) * 2));
-
-    menu[2].setFont(font);
-    menu[2].setFillColor(Color::White);
-    menu[2].setString("Exit");
-    menu[2].setPosition(Vector2f(w / 2, h / (MAX_NUMBER_OF_ITEMS + 1) * 3));
-
-    selectedItemIndex = 0;
-}
-
-
-void Menu::draw(RenderWindow &window_)
-{
-    for (int i = 0; i < MAX_NUMBER_OF_ITEMS; i++)
-    {
-        window_.draw(menu[i]);
-    }
-}
-
-void Menu::MoveUp()
-{
-    if (selectedItemIndex - 1 >= 0)
-    {
-        menu[selectedItemIndex].setFillColor(Color::White);
-        selectedItemIndex--;
-        menu[selectedItemIndex].setFillColor(Color::Red);
-    }
-}
-
-void Menu::MoveDown()
-{
-    if (selectedItemIndex + 1 < MAX_NUMBER_OF_ITEMS)
-    {
-        menu[selectedItemIndex].setFillColor(Color::White);
-        selectedItemIndex++;
-        menu[selectedItemIndex].setFillColor(Color::Red);
-    }
-}
-
-//main method responsible for entirety of the game, especially graphics section
-
-void Game::play()
-{
-    RenderWindow window(VideoMode(width, height), "Snake");
-    // RenderWindow window(VideoMode(width, height), "Snake", Style::Close | Style::Resize);
-    /*RectangleShape snake (Vector2f(300.0f, 100.0f));
-    snake.setFillColor(Color::Green);
-    snake.setOrigin(0.0f, 0.0f); */
     Texture textureBlock,textureSnake,textureApple;
     textureBlock.loadFromFile("white.png");
     textureSnake.loadFromFile("green.png");
@@ -185,6 +138,36 @@ void Game::play()
     Sprite blockSprite(textureBlock);
     Sprite snakeSprite(textureSnake);
     Sprite appleSprite(textureApple);
+
+    for (int i=0; i<columns; i++)
+    {
+        for (int j=0; j<rows; j++)
+        {
+            blockSprite.setPosition(i*sizeBlock,j*sizeBlock);
+            window.draw(blockSprite);
+        }
+    }
+
+    for (int i=0; i<sizeSnake; i++)
+    {
+        snakeSprite.setPosition(snake[i].x*sizeBlock, snake[i].y*sizeBlock);
+        window.draw(snakeSprite);
+    }
+
+    appleSprite.setPosition(apple.x*sizeBlock,  apple.y*sizeBlock);
+    window.draw(appleSprite);
+}
+//main method responsible for entirety of the game, especially graphics section
+
+void Game::play()
+{
+    delay = delay_default; //seting the speed and so level of difficulty
+    RenderWindow window(VideoMode(width, height), "Snake");
+    // RenderWindow window(VideoMode(width, height), "Snake", Style::Close | Style::Resize);
+    /*RectangleShape snake (Vector2f(300.0f, 100.0f));
+    snake.setFillColor(Color::Green);
+    snake.setOrigin(0.0f, 0.0f); */
+    sizeSnake = 1;
     Clock clock;
     float timer = 0;
 
@@ -234,23 +217,8 @@ void Game::play()
         }
 
         window.clear();
-        // drawing fields
-        for (int i=0; i<columns; i++)
-        {
-            for (int j=0; j<rows; j++)
-            {
-                blockSprite.setPosition(i*sizeBlock,j*sizeBlock);
-                window.draw(blockSprite);
-            }
-        }
-        for (int i=0; i<sizeSnake; i++)
-        {
-            snakeSprite.setPosition(snake[i].x*sizeBlock, snake[i].y*sizeBlock);
-            window.draw(snakeSprite);
-        }
 
-        appleSprite.setPosition(apple.x*sizeBlock,  apple.y*sizeBlock);
-        window.draw(appleSprite);
+        drawFields(window);
 
         window.display();
 
@@ -261,9 +229,7 @@ void Game::play()
 void Game::start()
 {
     RenderWindow window(VideoMode(width, height), "Snake");
-
     Menu menu(window.getSize().x, window.getSize().y);
-
     while (window.isOpen())
     {
         Event event;
@@ -290,11 +256,61 @@ void Game::start()
                         Game::play();
                         break;
                     case 1:
-                        std::cout << "Option button has been pressed" << std::endl;
-                        break;
+                        goto opt;
                     case 2:
                         window.close();
                         break;
+                    }
+                    break;
+                }
+
+                break;
+            case Event::Closed:
+                window.close();
+                break;
+
+            }
+        }
+        window.clear();
+
+        menu.draw(window);
+
+        window.display();
+
+    }
+opt:
+    Options options(window.getSize().x, window.getSize().y);
+    while (window.isOpen())
+    {
+        Event event;
+
+        while (window.pollEvent(event))
+        {
+            switch (event.type)
+            {
+            case Event::KeyReleased:
+                switch (event.key.code)
+                {
+                case Keyboard::Up:
+                    options.MoveUpOptions();
+                    break;
+
+                case Keyboard::Down:
+                    options.MoveDownOptions();
+                    break;
+
+                case Keyboard::Return:
+                    switch (options.GetPressedOptionsItem())
+                    {
+                    case 0:
+                        delay_default= 0.3;
+                        goto men;
+                    case 1:
+                        delay_default = 0.2;
+                        goto men;
+                    case 2:
+                        delay_default = 0.1;
+                        goto men;
                     }
 
                     break;
@@ -310,9 +326,59 @@ void Game::start()
         }
         window.clear();
 
+        options.draw(window);
+
+        window.display();
+    }
+    men:
+    while (window.isOpen())
+    {
+        Event event;
+
+        while (window.pollEvent(event))
+        {
+            switch (event.type)
+            {
+            case Event::KeyReleased:
+                switch (event.key.code)
+                {
+                case Keyboard::Up:
+                    menu.MoveUp();
+                    break;
+
+                case Keyboard::Down:
+                    menu.MoveDown();
+                    break;
+
+                case Keyboard::Return:
+                    switch (menu.GetPressedItem())
+                    {
+                    case 0:
+                        Game::play();
+                        break;
+                    case 1:
+                        goto opt;
+                    case 2:
+                        window.close();
+                        break;
+                    }
+
+                    break;
+                }
+
+                break;
+            case Event::Closed:
+                window.close();
+                break;
+
+            }
+        }
+        window.clear();
+
         menu.draw(window);
 
         window.display();
+
     }
 }
 
