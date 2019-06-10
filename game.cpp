@@ -1,23 +1,110 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <cstddef>
 #include <algorithm>
 #include <vector>
 #include <ctime>
-#include "snake.h"
+#include "game.h"
 #include "menu.h"
 using namespace sf;
 using namespace std;
 
 //initialization of global variables
 
-Snake snake[Game::columns * Game:: rows];
+Snake snake[100];
 Apple apple;
+Bomb bomb;
 
 
 /*Game::Game()
 {
     window.create(VideoMode(width, height), "Snake");
 }*/
+void Game::getPlaceAppleBomb()
+{
+    apple.x=rand() % columns;
+    apple.y=rand() % rows;
+    do
+    {
+        bomb.x = rand() %columns;
+        bomb.y = rand() % rows;
+    }
+    while ((apple.x == bomb.x) && (apple.y == bomb.y));
+}
+void Game:: move(RenderWindow & window)
+{
+    // moving of the snake by following head
+    for (int i=sizeSnake; i>0; --i)
+    {
+        snake[i].x=snake[i-1].x;
+        snake[i].y=snake[i-1].y;
+    }
+    // moving of head of the snake
+    switch (moveDirection)
+    {
+    case 0:
+        snake[0].y++;
+        break;
+    case 1:
+        snake[0].x--;
+        break;
+    case 2:
+        snake[0].x++;
+        break;
+    case 3:
+        snake[0].y--;
+        break;
+    }
+
+//eating apple
+    if ((snake[0].x==apple.x) && (snake[0].y==apple.y))
+    {
+        sizeSnake++;
+        if(delay > 0.03)
+            delay -= 0.01;
+        getPlaceAppleBomb();
+        }
+// eating bomb
+    if ((snake[0].x==bomb.x) && (snake[0].y==bomb.y))
+    {
+        gameover(window);
+    }
+
+
+// going through walls
+    if (snake[0].x>columns-1)
+    {
+        snake[0].x=0;
+        // gameover(window);
+    }
+
+    if (snake[0].x<0)
+    {
+        snake[0].x=columns-1;
+        //gameover(window);
+    }
+
+    if (snake[0].y>rows-1)
+    {
+        snake[0].y=0;
+    }
+
+    if (snake[0].y<0)
+    {
+        snake[0].y=rows-1;
+    }
+
+//snake eating snake
+    for (int i=1; i<sizeSnake; i++)
+    {
+        if (snake[0].x==snake[i].x && snake[0].y==snake[i].y)
+        {
+            /*sizeSnake = i;
+            delay = delay_default - (0.01*i);*/
+            gameover(window);
+        }
+    }
+}
 
 // the gameover () method throws the user back into the menu, prints out the score and restores the initial settings
 void Game::gameover(RenderWindow & window)
@@ -52,115 +139,15 @@ void Game::gameover(RenderWindow & window)
     } */
 }
 
-// method responsible for one single move on the board
-
-void Game:: move(RenderWindow & window)
-{
-    // moving of the snake by following head
-    for (int i=sizeSnake; i>0; --i)
-    {
-        snake[i].x=snake[i-1].x;
-        snake[i].y=snake[i-1].y;
-    }
-    // moving of head of the snake
-    switch (moveDirection)
-    {
-    case 0:
-        snake[0].y++;
-        break;
-    case 1:
-        snake[0].x--;
-        break;
-    case 2:
-        snake[0].x++;
-        break;
-    case 3:
-        snake[0].y--;
-        break;
-    }
-//eating apple
-    if ((snake[0].x==apple.x) && (snake[0].y==apple.y))
-    {
-        sizeSnake++;
-        if(delay > 0.02)
-                delay -= 0.01;
-        apple.x=rand() % columns;
-        apple.y=rand() % rows;
-    }
-
-    // going through walls
-    if (snake[0].x>columns-1)
-    {
-        //snake[0].x=0;
-        gameover(window);
-    }
-
-    if (snake[0].x<0)
-    {
-        //snake[0].x=columns-1;
-        gameover(window);
-    }
-
-    if (snake[0].y>rows-1)
-    {
-        gameover(window);// snake[0].y=0;
-    }
-
-    if (snake[0].y<0)
-    {
-        // snake[0].y=rows-1;
-        gameover(window);
-    }
-
-//snake eating snake
-    for (int i=1; i<sizeSnake; i++)
-    {
-        if (snake[0].x==snake[i].x && snake[0].y==snake[i].y)
-        {
-            sizeSnake = i;
-            delay = delay_default - (0.01*i);
-        }
-    }
-
-
-}
-
-
-
-
-void Game::drawFields(RenderWindow & window)
-{
-    Texture textureBlock,textureSnake,textureApple;
-    textureBlock.loadFromFile("white.png");
-    textureSnake.loadFromFile("green.png");
-    textureApple.loadFromFile("red.png");
-
-    Sprite blockSprite(textureBlock);
-    Sprite snakeSprite(textureSnake);
-    Sprite appleSprite(textureApple);
-
-    for (int i=0; i<columns; i++)
-    {
-        for (int j=0; j<rows; j++)
-        {
-            blockSprite.setPosition(i*sizeBlock,j*sizeBlock);
-            window.draw(blockSprite);
-        }
-    }
-
-    for (int i=0; i<sizeSnake; i++)
-    {
-        snakeSprite.setPosition(snake[i].x*sizeBlock, snake[i].y*sizeBlock);
-        window.draw(snakeSprite);
-    }
-
-    appleSprite.setPosition(apple.x*sizeBlock,  apple.y*sizeBlock);
-    window.draw(appleSprite);
-}
-//main method responsible for entirety of the game, especially graphics section
-
 void Game::play()
 {
+    if((rows ==  0) && (columns == 0))
+    {
+        rows = 15;
+        columns = 20;
+        width = sizeBlock * columns;
+        height = sizeBlock * rows;
+    }
     delay = delay_default; //seting the speed and so level of difficulty
     RenderWindow window(VideoMode(width, height), "Snake");
     // RenderWindow window(VideoMode(width, height), "Snake", Style::Close | Style::Resize);
@@ -170,9 +157,7 @@ void Game::play()
     sizeSnake = 1;
     Clock clock;
     float timer = 0;
-
-    apple.x=rand() %columns;
-    apple.y=rand() %rows;
+    getPlaceAppleBomb();
     while(window.isOpen())
     {
         float time = clock.getElapsedTime().asSeconds();
@@ -225,10 +210,52 @@ void Game::play()
 
     }
 }
+void Game::drawFields(RenderWindow & window)
+{
+    Texture textureBlock,textureSnake,textureApple, textureBomb;
+    textureBlock.loadFromFile("white2.png");
+    textureSnake.loadFromFile("green.png");
+    textureApple.loadFromFile("red.png");
+    textureBomb.loadFromFile("white.png");
+
+    Sprite blockSprite(textureBlock);
+    Sprite snakeSprite(textureSnake);
+    Sprite appleSprite(textureApple);
+    Sprite bombSprite(textureBomb);
+
+    for (int i=0; i<columns; i++)
+    {
+        for (int j=0; j<rows; j++)
+        {
+            blockSprite.setPosition(i*sizeBlock,j*sizeBlock);
+            window.draw(blockSprite);
+        }
+    }
+
+    for (int i=0; i<sizeSnake; i++)
+    {
+        snakeSprite.setPosition(snake[i].x*sizeBlock, snake[i].y*sizeBlock);
+        window.draw(snakeSprite);
+    }
+
+    appleSprite.setPosition(apple.x*sizeBlock,  apple.y*sizeBlock);
+    bombSprite.setPosition(bomb.x*sizeBlock, bomb.y*sizeBlock);
+
+    window.draw(appleSprite);
+    window.draw(bombSprite);
+}
+
+// method responsible for one single move on the board
+
+
+
+//main method responsible for entirety of the game, especially graphics section
+
+
 
 void Game::start()
 {
-    RenderWindow window(VideoMode(width, height), "Snake");
+    RenderWindow window(VideoMode(960, 720), "Snake");
     Menu menu(window.getSize().x, window.getSize().y);
     while (window.isOpen())
     {
@@ -304,12 +331,24 @@ opt:
                     {
                     case 0:
                         delay_default= 0.3;
+                        rows = 10;
+                        columns = 10;
+                        width = sizeBlock * columns;
+                        height = sizeBlock * rows;
                         goto men;
                     case 1:
                         delay_default = 0.2;
+                        rows = 15;
+                        columns = 20;
+                        width = sizeBlock * columns;
+                        height = sizeBlock * rows;
                         goto men;
                     case 2:
                         delay_default = 0.1;
+                        rows = 15;
+                        columns = 25;
+                        width = sizeBlock * columns;
+                        height = sizeBlock * rows;
                         goto men;
                     }
 
@@ -330,7 +369,7 @@ opt:
 
         window.display();
     }
-    men:
+men:
     while (window.isOpen())
     {
         Event event;
@@ -381,5 +420,7 @@ opt:
 
     }
 }
+
+
 
 

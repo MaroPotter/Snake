@@ -1,6 +1,6 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include "snake.h"
+#include "game.h"
 #include "menu.h"
 using namespace std;
 

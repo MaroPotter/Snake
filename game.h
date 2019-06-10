@@ -6,8 +6,8 @@ using namespace std;
 class Game
 {
     int sizeBlock = 48;
-    int width = sizeBlock * columns;
-    int height = sizeBlock * rows;
+    int width;
+    int height;
     int sizeSnake;
     int moveDirection = 4;
     vector<int> scores;
@@ -16,10 +16,11 @@ class Game
     //sf::RenderWindow window;
 public:
    // Game();
-    constexpr static int columns = 20;
-    constexpr static int rows = 15;
+    int columns = 0;
+    int rows = 0;
     float delay;
     float delay_default = 0.2; // the default level of difficulty: intermediate
+    void getPlaceAppleBomb();
     void move(sf::RenderWindow &);
     void drawFields(sf::RenderWindow &);
     void play();
@@ -31,6 +32,10 @@ struct Snake
     int x,y;
 };
 struct Apple
+{
+    int x,y;
+};
+struct Bomb
 {
     int x,y;
 };
